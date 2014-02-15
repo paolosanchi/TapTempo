@@ -8,49 +8,75 @@ TapTempo::TapTempo()
 	_tapCounter = 0;
 }
 
-void TapTempo::setup(unsigned long autoresetTime)
+void TapTempo::setup(unsigned long defaultResetTimeSpan)
 {
-	_autoresetTime = autoresetTime;
+	_defaultResetTimeSpan = defaultResetTimeSpan * 1000000;
+	reset();
 }
 
 void TapTempo::flush()
 {	
 	// check for timer timeout
-	if (micros() > tapTimeout && _tapCounter > 0)
+	unsigned long currentTapTime = micros();
+	if (currentTapTime > _resetTime && _tapCounter > 0)
 	{
-	  // restart tap counter
-	  tapTimeFilter.reset();
-	  _tapCounter = 0;
-	  Serial.println("Reset!");
+		reset();
 	}
+}
+
+void TapTempo::reset()
+{
+	// restart tap counter
+	tapTimeFilter.reset();
+	_tapCounter = 0;
+	_resetTimeSpan = _defaultResetTimeSpan;
+	
+	Serial.println(" ");
+	Serial.print("Reset! ");
 }
 
 void TapTempo::tap()
 {		   
-	flush();
+	flush();	// in case the client forget it :)
 	
-	// calculate
+	unsigned long currentTapTime = micros();
+	
 	_tapCounter++;
-	tapTimer = micros() - lastTapTime;
+	if(_tapCounter > 1){
 	
-	  Serial.print("micros: ");
-	  Serial.println(micros(), DEC);
-	  Serial.print("lastTapTime: ");
-	  Serial.println(lastTapTime, DEC);
-	//lastTapTime = micros();
-	unsigned long tapCycle = tapTimeFilter.reading(tapTimer);
-	if (_tapCounter >= 2)
-	{
-		// fire the value updated event
-		if (_valueUpdated) { _valueUpdated(tapCycle); }
-	}
+		unsigned long tapDiff = currentTapTime - _lastTapTime;
 		
-	// store current time
-	lastTapTime = micros();
-	tapTimeout = micros() + (_autoresetTime);
+		Serial.println("currentTapTime - currentTapTime =  tapDiff");
+		Serial.print(currentTapTime, DEC);
+		Serial.print(" - ");
+		Serial.print(_lastTapTime, DEC);
+		Serial.print(" = ");
+		Serial.println(tapDiff, DEC);
+		
+		Serial.print("tapDiff: ");
+		Serial.println(int(tapDiff / 1000), DEC);		
+
+		int tapCycle = tapTimeFilter.reading(int(tapDiff / 1000));
+		Serial.print("tapCycle: ");
+		Serial.println(tapCycle, DEC);
+		
+		if (_tapCounter >= 2)
+		{
+			// fire the value updated event
+			if (_valueUpdated) { _valueUpdated(tapCycle); }
+		}
+				
+		_resetTimeSpan = long(tapCycle) * 1000 * 2;
+	}
 	
-	Serial.print("tap!");
-	Serial.println(tapTimeout, DEC);
+	// store current time
+	_lastTapTime = currentTapTime;
+	_resetTime = currentTapTime + _resetTimeSpan;
+	
+	Serial.print("_resetTimeSpan: ");
+	Serial.println(_resetTimeSpan, DEC);	
+	Serial.print("_resetTime: ");
+	Serial.println(_resetTime, DEC);	
 }
 
 void TapTempo::valueUpdatedHandler(valueEventHandler handler)
