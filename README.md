@@ -16,8 +16,10 @@ Usage sample
 #include <movingAvg.h>
 #include <Button.h>
 
+#define TAP 2
+
 TapTempo tap;
-Button btn = Button(2, BUTTON_PULLDOWN);
+Button btn = Button(TAP, BUTTON_PULLDOWN);
 
 void setup()
 {
