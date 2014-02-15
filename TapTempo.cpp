@@ -17,10 +17,18 @@ void TapTempo::setup(unsigned long defaultResetTimeSpan)
 void TapTempo::flush()
 {	
 	// check for timer timeout
-	unsigned long currentTapTime = micros();
-	if (currentTapTime > _resetTime && _tapCounter > 0)
+	unsigned long currentTime = micros();
+	if (currentTime > _resetTime && _tapCounter > 0)
 	{
 		reset();
+	}
+	if(currentTime > _beatTime && _lastValue != 0)
+	{
+		if (_beat)
+		{
+			_beat(); 
+			_beatTime = currentTime + (long(_lastValue) * 1000);
+		}
 	}
 }
 
@@ -35,14 +43,20 @@ void TapTempo::reset()
 	Serial.print("Reset! ");
 }
 
-void TapTempo::tap()
+int TapTempo::getLastValue()
+{
+	return _lastValue;
+}
+
+bool TapTempo::tap()
 {		   
 	flush();	// in case the client forget it :)
 	
 	unsigned long currentTapTime = micros();
 	
 	_tapCounter++;
-	if(_tapCounter > 1){
+	bool newValue = _tapCounter > 1;
+	if(newValue){
 	
 		unsigned long tapDiff = currentTapTime - _lastTapTime;
 		
@@ -56,30 +70,38 @@ void TapTempo::tap()
 		Serial.print("tapDiff: ");
 		Serial.println(int(tapDiff / 1000), DEC);		
 
-		int tapCycle = tapTimeFilter.reading(int(tapDiff / 1000));
-		Serial.print("tapCycle: ");
-		Serial.println(tapCycle, DEC);
+		_lastValue = tapTimeFilter.reading(int(tapDiff / 1000));
+		Serial.print("_lastValue: ");
+		Serial.println(_lastValue, DEC);
 		
 		if (_tapCounter >= 2)
 		{
 			// fire the value updated event
-			if (_valueUpdated) { _valueUpdated(tapCycle); }
+			if (_valueUpdated) { _valueUpdated(_lastValue); }
 		}
 				
-		_resetTimeSpan = long(tapCycle) * 1000 * 2;
+		_resetTimeSpan = long(_lastValue) * 1000 * 2;
 	}
 	
 	// store current time
 	_lastTapTime = currentTapTime;
 	_resetTime = currentTapTime + _resetTimeSpan;
+	_beatTime = currentTapTime + (long(_lastValue) * 1000);
 	
 	Serial.print("_resetTimeSpan: ");
 	Serial.println(_resetTimeSpan, DEC);	
 	Serial.print("_resetTime: ");
 	Serial.println(_resetTime, DEC);	
+	
+	return newValue;
 }
 
 void TapTempo::valueUpdatedHandler(valueEventHandler handler)
 {
 	_valueUpdated = handler;
+}
+
+void TapTempo::beatHandler(beatEventHandler handler)
+{
+	_beat = handler;
 }
