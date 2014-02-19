@@ -32,6 +32,7 @@ class TapTempo
 		unsigned long _defaultResetTimeSpan;
 		unsigned long _resetTimeSpan;
 		unsigned long _beatTime;
+		int _beatSubdivisions;
 		movingAvg tapTimeFilter;
 		valueEventHandler _valueUpdated;
 		beatEventHandler _beat;
