@@ -11,7 +11,7 @@ TapTempo::TapTempo()
 void TapTempo::setup(unsigned long defaultResetTimeSpan, int beatSubdivisions)
 {
 	_defaultResetTimeSpan = defaultResetTimeSpan * 1000000;
-	_BeatSubdivisions = beatSubdivisions;
+	_beatSubdivisions = beatSubdivisions;
 	reset();
 }
 
