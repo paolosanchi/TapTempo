@@ -15,7 +15,7 @@ class TapTempo
 {
 	public:
 		TapTempo();
-		void setup(unsigned long defaultResetTimeSpan);
+		void setup(unsigned long defaultResetTimeSpan, int beatSubdivisions);
 
 		bool tap();		
 		void flush();		
