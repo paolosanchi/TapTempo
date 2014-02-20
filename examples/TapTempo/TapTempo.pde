@@ -9,9 +9,10 @@ Button btn = Button(TAP, BUTTON_PULLDOWN);
 
 void setup()
 {
-  tap.setup(2);
-  tap.valueUpdatedHandler(onValueChange);  
-
+  tap.setup(TAP);
+  tap.valueUpdatedHandler(valueChanged);  
+  tap.beatHandler(beat);
+  
   btn.clickHandler(onTempoClick);
   Serial.begin(9600);
 }
@@ -24,11 +25,18 @@ void loop()
 
 void onTempoClick(Button &b)
 {
+  Serial.println(" ");
+  Serial.println("TAP!");
   tap.tap();
 }
 
-void onValueChange(unsigned long val)
+void beat()
+{  
+  Serial.println("BEAT!");
+}
+
+void valueChanged(int val)
 {
-    Serial.print("New value: ");
+    Serial.print("New value!");
     Serial.println(val, DEC);
 }

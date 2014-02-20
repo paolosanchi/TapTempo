@@ -15,7 +15,7 @@ class TapTempo
 {
 	public:
 		TapTempo();
-		void setup(unsigned long defaultResetTimeSpan);
+		void setup(unsigned long defaultResetTimeSpan, unsigned long minTapDiffTimeSpan);
 
 		bool tap();		
 		void flush();		
@@ -30,6 +30,7 @@ class TapTempo
 		unsigned long _lastTapTime;
 		unsigned long _resetTime;
 		unsigned long _defaultResetTimeSpan;
+		unsigned long _minTapDiffTimeSpan;
 		unsigned long _resetTimeSpan;
 		unsigned long _beatTime;
 		movingAvg tapTimeFilter;
