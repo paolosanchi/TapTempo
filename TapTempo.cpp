@@ -8,10 +8,39 @@ TapTempo::TapTempo()
 	_tapCounter = 0;
 }
 
-void TapTempo::setup(unsigned long defaultResetTimeSpan, unsigned long minTapDiffTimeSpan)
+void TapTempo::setup(unsigned long defaultResetTimeSpan, unsigned long minTapDiffTimeSpan, int beatSubdivisions)
 {
 	_defaultResetTimeSpan = defaultResetTimeSpan * 1000000;
 	_minTapDiffTimeSpan = minTapDiffTimeSpan;
+	_beatSubdivisions = beatSubdivisions;
+	reset();
+}
+
+void TapTempo::flush()
+{	
+	// check for timer timeout
+	unsigned long currentTime = micros();
+	if (currentTime > _resetTime && _tapCounter > 0)
+	{
+		reset();
+	}
+	if(currentTime > _beatTime && _lastValue != 0)
+	{
+		if (_beat)
+		{
+			_beat(); 
+			_beatTime = currentTime + (long(_lastValue) * 1000);
+		}
+	}
+}
+
+void TapTempo::reset()
+{
+	// restart tap counter
+	tapTimeFilter.reset();
+	_tapCounter = 0;
+	_resetTimeSpan = _defaultResetTimeSpan;
+	
 	reset();
 }
 
