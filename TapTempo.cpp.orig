@@ -5,25 +5,20 @@ typedef void (*buttonEventHandler)(unsigned long&);
 
 TapTempo::TapTempo()
 {
-	setup(3);
+	_tapCounter = 0;
 }
 
-void TapTempo::setup(unsigned long defaultResetTimeSpan)
-{
-	setup(defaultResetTimeSpan, 200000);
-}
-
+<<<<<<< HEAD
 void TapTempo::setup(unsigned long defaultResetTimeSpan, unsigned long minTapDiffTimeSpan)
-{
-	setup(defaultResetTimeSpan, minTapDiffTimeSpan, 1);
-}
-
-void TapTempo::setup(unsigned long defaultResetTimeSpan, unsigned long minTapDiffTimeSpan, int beatSubdivisions)
 {
 	_defaultResetTimeSpan = defaultResetTimeSpan * 1000000;
 	_minTapDiffTimeSpan = minTapDiffTimeSpan;
+=======
+void TapTempo::setup(unsigned long defaultResetTimeSpan, int beatSubdivisions)
+{
+	_defaultResetTimeSpan = defaultResetTimeSpan * 1000000;
 	_beatSubdivisions = beatSubdivisions;
-	_tapCounter = 0;
+>>>>>>> 341915eff515f62efb5af081fae11839e117feb7
 	reset();
 }
 
@@ -35,27 +30,25 @@ void TapTempo::flush()
 	{
 		reset();
 	}
-	
-	// if someone is listening
-	if (_beat)
+	if(currentTime > _beatTime && _lastValue != 0)
 	{
-		if(currentTime > _beatTime && _lastValue != 0)
-		{					
-			_beat(_subBeatCounter == 0);
-			_subBeatCounter = ++_subBeatCounter % _beatSubdivisions;
-			updateBeatTime(currentTime);
+		if (_beat)
+		{
+			_beat(); 
+			_beatTime = currentTime + (long(_lastValue) * 1000);
 		}
 	}
 }
 
 void TapTempo::reset()
 {
-    Serial.println("Reset!");
 	// restart tap counter
 	tapTimeFilter.reset();
 	_tapCounter = 0;
 	_resetTimeSpan = _defaultResetTimeSpan;
-	_subBeatCounter = 0;
+	
+	//Serial.println(" ");
+	//Serial.print("Reset! ");
 }
 
 int TapTempo::getLastValue()
@@ -78,8 +71,20 @@ bool TapTempo::tap()
 		newValue = _tapCounter > 1;
 		if(newValue)
 		{		
+			//Serial.println("currentTapTime - currentTapTime =  tapDiff");
+			//Serial.print(currentTapTime, DEC);
+			//Serial.print(" - ");
+			//Serial.print(_lastTapTime, DEC);
+			//Serial.print(" = ");
+			//Serial.println(tapDiff, DEC);
+			
+			//Serial.print("tapDiff: ");
+			//Serial.println(int(tapDiff / 1000), DEC);		
+
 			_lastValue = tapTimeFilter.reading(int(tapDiff / 1000));
-						
+			//Serial.print("_lastValue: ");
+			//Serial.println(_lastValue, DEC);
+			
 			if (_tapCounter >= 3)
 			{
 				// fire the value updated event
@@ -92,15 +97,15 @@ bool TapTempo::tap()
 		// store current time
 		_lastTapTime = currentTapTime;
 		_resetTime = currentTapTime + _resetTimeSpan;
-		updateBeatTime(currentTapTime);
+		_beatTime = currentTapTime + (long(_lastValue) * 1000);
+		
+		//Serial.print("_resetTimeSpan: ");
+		//Serial.println(_resetTimeSpan, DEC);	
+		//Serial.print("_resetTime: ");
+		//Serial.println(_resetTime, DEC);	
 	}
 	
 	return newValue;
-}
-
-void TapTempo::updateBeatTime(unsigned long currentTime)
-{
-	_beatTime = currentTime + ((long(_lastValue) * 1000) / _beatSubdivisions);
 }
 
 void TapTempo::valueUpdatedHandler(valueEventHandler handler)

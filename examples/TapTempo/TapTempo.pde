@@ -8,13 +8,17 @@ TapTempo tap;
 Button btn = Button(TAP, BUTTON_PULLDOWN);
 
 void setup()
-{
-  tap.setup(TAP);
+{  
+  Serial.begin(9600);
+  Serial.println("Init..");
+  
+  tap.setup(TAP, 200000, 3);
   tap.valueUpdatedHandler(valueChanged);  
   tap.beatHandler(beat);
   
-  btn.clickHandler(onTempoClick);
-  Serial.begin(9600);
+  btn.clickHandler(onTempoClick);  
+  
+  Serial.println("START!");
 }
 
 void loop()
@@ -30,9 +34,13 @@ void onTempoClick(Button &b)
   tap.tap();
 }
 
-void beat()
+void beat(bool mainBeat)
 {  
-  Serial.println("BEAT!");
+  if(mainBeat)
+    Serial.println("BEAT!");
+  else  {
+    Serial.println("SUB-BEAT!");
+  }
 }
 
 void valueChanged(int val)

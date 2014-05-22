@@ -9,16 +9,17 @@
 #include <movingAvg.h>
 
 typedef void (*valueEventHandler)(int);
-typedef void (*beatEventHandler)(bool);
+typedef void (*beatEventHandler)();
 
 class TapTempo
 {
 	public:
 		TapTempo();
-		
-		void setup(unsigned long defaultResetTimeSpan);
+<<<<<<< HEAD
 		void setup(unsigned long defaultResetTimeSpan, unsigned long minTapDiffTimeSpan);
-		void setup(unsigned long defaultResetTimeSpan, unsigned long minTapDiffTimeSpan, int beatSubdivisions);
+=======
+		void setup(unsigned long defaultResetTimeSpan, int beatSubdivisions);
+>>>>>>> 341915eff515f62efb5af081fae11839e117feb7
 
 		bool tap();		
 		void flush();		
@@ -30,7 +31,6 @@ class TapTempo
 	private:
 		unsigned int _lastValue;
 		unsigned int _tapCounter;
-		unsigned int _subBeatCounter;
 		unsigned long _lastTapTime;
 		unsigned long _resetTime;
 		unsigned long _defaultResetTimeSpan;
@@ -41,8 +41,6 @@ class TapTempo
 		movingAvg tapTimeFilter;
 		valueEventHandler _valueUpdated;
 		beatEventHandler _beat;
-		
-		void updateBeatTime(unsigned long currentTime);
 };
 
 #endif
